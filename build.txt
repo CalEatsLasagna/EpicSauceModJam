@@ -1,0 +1,4 @@
+displayName = Epic Sauce Mod Jam
+author = very handsome people
+version = 0.1
+homepage = https://discord.gg/Sny5zZdUzp
