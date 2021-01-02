@@ -1,45 +1,64 @@
 using MonoMod.RuntimeDetour;
 using System;
 using System.Reflection;
+using Terraria;
 using Terraria.ModLoader;
+using Terraria.Utilities;
 
 namespace EpicSauceModJam
 {
     public class EpicSauceModJam : Mod
     {
-        IDetour d;
-        IDetour d2;
-
         public override void Load()
         {
-            MonoModHooks.RequestNativeAccess();
-
-            var test = typeof(Activator).GetMethod("CreateInstance", new Type[] { typeof(Type) });
-            var test2 = typeof(EpicSauceModJam).GetMethod("MagicPatch2", BindingFlags.Instance | BindingFlags.NonPublic);
-
-            var test3 = typeof(Random).GetMethod("Next", new Type[] { typeof(int) });
-            var test4 = typeof(EpicSauceModJam).GetMethod("MagicPatch4", BindingFlags.Instance | BindingFlags.NonPublic);
-
-            //d = new Hook(test, test2, this);
-            d2 = new Hook(test3, test4, this);
-
-            //d.Apply();
-            d2.Apply();
+            Main.rand = new Trollface();
+            On.Terraria.Utils.NextFloat_UnifiedRandom += Oops;
+            On.Terraria.Utils.NextFloat_UnifiedRandom_float += Oops2;
+            On.Terraria.Utils.NextFloat_UnifiedRandom_float_float += Oops3;
         }
 
-        private object MagicPatch2(Func<Type, object> orig, Type type)
+        private float Oops3(On.Terraria.Utils.orig_NextFloat_UnifiedRandom_float_float orig, UnifiedRandom r, float minValue, float maxValue)
         {
-            return new Trollface();
+            return maxValue - 0.01f;
         }
 
-        private int MagicPatch4(Func<int, int> orig, int maxValue)
+        private float Oops2(On.Terraria.Utils.orig_NextFloat_UnifiedRandom_float orig, UnifiedRandom r, float maxValue)
         {
-            return maxValue;
+            return maxValue - 0.01f;
+        }
+
+        private float Oops(On.Terraria.Utils.orig_NextFloat_UnifiedRandom orig, UnifiedRandom r)
+        {
+            return 1;
+        }
+
+        public override void PreUpdateEntities()
+        {
+            if (!(Main.rand is Trollface))
+                Main.rand = new Trollface();
         }
     }
 
-    public class Trollface : Object
+    public class Trollface : UnifiedRandom
     {
+        public override int Next(int maxValue)
+        {
+            return maxValue - 1;
+        }
 
+        public override int Next(int minValue, int maxValue)
+        {
+            return maxValue - 1;
+        }
+
+        public override int Next()
+        {
+            return 1;
+        }
+
+        public override double NextDouble()
+        {
+            return 1;
+        }
     }
 }
